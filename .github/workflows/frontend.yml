@@ -1,0 +1,124 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main", "dev"]
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  # Job 1: Lint
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # Job 2: Test (needs lint)
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Vitest
+        run: npm test
+        env:
+          # Test must pass without Laravel backend – no network to API required
+          VITE_API_URL: http://localhost:8000
+
+  # Job 3: Build (needs test) – produces artifacts
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'http://localhost:8000' }}
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  # Job 4: Deploy (needs build) – only on main, does NOT rebuild
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
+      - name: List contents of dist/ (no rebuild)
+        run: |
+          echo "=== Contents of dist/ (from build artifact) ==="
+          find dist -type f | sort
+          echo ""
+          echo "=== File listing with sizes ==="
+          ls -lah dist/
+          if [ -d dist/assets ]; then
+            echo ""
+            echo "=== assets/ ==="
+            ls -lah dist/assets/
+          fi
+          echo "=== End of dist/ listing ==="
+        working-directory: .
+
+      - name: Deploy message
+        run: |
+          echo "Frontend artifacts ready for deployment."
+          echo "In a real setup you would upload dist/ to a static host (S3, Netlify, nginx, etc.)."
+        working-directory: .
