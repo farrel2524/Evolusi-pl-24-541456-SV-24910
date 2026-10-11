@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('plantd')) {
+            return; // already created by 2025_09_16_081615_create_plantd_table
+        }
+
     Schema::create('plantd', function (Blueprint $table) {
         $table->increments("id");
         $table->string("Pemilik_lahan");
