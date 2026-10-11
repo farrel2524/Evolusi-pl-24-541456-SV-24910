@@ -33,35 +33,6 @@ class PlantController extends Controller
         return view('abt', compact('plantd','latest5','totalCount','totalLuas','maxLuas','minLuas','pemilikList'));
     }
 
-    /**
-     * JSON API endpoint for the plantd table (used by the Vue frontend).
-     * GET /api/plants  or  GET /api/tugas
-     */
-    public function apiIndex(Request $request)
-    {
-        $query = Plantd::query();
-
-        if ($request->filled('pemilik') && $request->pemilik !== 'semua') {
-            $query->where('Pemilik_lahan', $request->pemilik);
-        }
-
-        if ($request->filled('search')) {
-            $keyword = $request->search;
-            $query->where('Pemilik_lahan', 'like', "%{$keyword}%");
-        }
-
-        $data = $query->orderBy('id', 'asc')->get();
-
-        return response()->json([
-            'success' => true,
-            'data'    => $data,
-            'meta'    => [
-                'total'      => Plantd::count(),
-                'total_luas' => Plantd::sum('Luas_lahan'),
-            ],
-        ]);
-    }
-
     public function create()
     {
         return view('addu');
@@ -79,11 +50,13 @@ class PlantController extends Controller
         return redirect()->route('plants.index')->with('success', 'Data berhasil dibuat.');
     }
 
+
     public function edit($id)
     {
         $plant = Plantd::findOrFail($id);
         return view('addu', compact('plant'));
     }
+
 
     public function update(Request $request, $id)
     {

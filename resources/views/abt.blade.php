@@ -10,7 +10,7 @@
     * { box-sizing: border-box; margin:0; padding:0; }
     body {
       font-family: "Irish Grover", system-ui;
-      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      background: url("Images/plbg.png") center/cover no-repeat;
       background-color: green;
       min-height:100vh;
       color: white;

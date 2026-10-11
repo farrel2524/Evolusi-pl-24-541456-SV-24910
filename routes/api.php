@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PlantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,7 +17,3 @@ use App\Http\Controllers\PlantController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-// JSON API for plantd table (used by Vue frontend)
-Route::get('/plants', [PlantController::class, 'apiIndex']);
-Route::get('/tugas', [PlantController::class, 'apiIndex']);
