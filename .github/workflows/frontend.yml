@@ -23,8 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          # cache: "npm"
+          # cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -45,8 +45,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          # cache: "npm"
+          # cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -54,7 +54,6 @@ jobs:
       - name: Run Vitest
         run: npm test
         env:
-          # Test must pass without Laravel backend – no network to API required
           VITE_API_URL: http://localhost:8000
 
   # Job 3: Build (needs test) – produces artifacts
@@ -70,8 +69,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          # cache: "npm"
+          # cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
